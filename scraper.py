@@ -3,25 +3,32 @@ from bs4 import BeautifulSoup
 import pprint
 import time
 
-res = requests.get("http://books.toscrape.com/")
-soup = BeautifulSoup(res.text, "html.parser")
-books = []
-filtered = []
-total_pages = 0
+base_url = "http://books.toscrape.com/"
+# res = requests.get("http://books.toscrape.com/")
+# soup = BeautifulSoup(res.text, "html.parser")
 
-def get_all_pages():
+def num_of_pages():
+    soup=BeautifulSoup(requests.get(base_url).text, "html.parser")
     page=soup.find(class_="current")
-    total_pages=page.string.strip()
-    total_pages = int(total_pages[10:12])
-    pprint.pprint(total_pages)
+    total_pages = int(page.string.strip()[10:12])
+    return total_pages
 
-def get_titles():
+def get_books_on_page(int):
+    books = []
+    soup = BeautifulSoup(requests.get(base_url+f"catalogue/page-{int}.html").text, "html.parser")
     for link in soup.findAll("a"):
         title = link.get("title")
         if title is not None:
             books.append(title)
     pprint.pprint(books)
+    return books
 
+def get_all_books():
+    books = []
+    for i in range(num_of_pages()):
+        books.append(get_books_on_page(i))
+    return books
+        
 # def search():
 #     _search_term = input()
 #     for book in books:
@@ -29,7 +36,7 @@ def get_titles():
 #             filtered.append(book)
 #     pprint.pprint(filtered)
 
-get_all_pages()
+pprint.pprint(get_all_books())
 
 
 
